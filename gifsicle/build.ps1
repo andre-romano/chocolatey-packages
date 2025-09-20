@@ -36,6 +36,15 @@ if ($LASTEXITCODE -ne 0) {
     Exit $LASTEXITCODE
 }
 
+$executable = Get-Command "$packageName" | Select-Object -First 1
+Write-Output "Executable: $executable"
+& "$executable" --version
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "Check failed: $LASTEXITCODE"
+    Exit $LASTEXITCODE
+}
+
+
 choco uninstall -y "$packageName"
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Uninstall failed: $LASTEXITCODE"

@@ -5,8 +5,6 @@ $packageName = 'mozjpeg'
 $toolsDir = "$(Split-Path -parent $MyInvocation.MyCommand.Definition)"
 $unzipLocation = Join-Path "$toolsDir" "$packageName"
 
-$executables = @('cjpeg', 'djpeg', 'jpegtran')
-
 Install-ChocolateyZipPackage `
     -PackageName "$packageName" `
     -UnzipLocation "$unzipLocation" `
@@ -17,28 +15,6 @@ Install-ChocolateyZipPackage `
     -Checksum "ef5c30b892b48e1c4bf82752ecbea1280e03d285ede8f1d3d47cb939f4ca150a" `
     -ChecksumType 'sha256'    
 
-Write-Output "Check installed files ..."
-foreach ($executable in $executables) {
-    $exePath = Join-Path "$unzipLocation" "$executable-static.exe"
-    if (-Not (Get-Command "$exePath")) {
-        Write-Error "File not found: $exePath"
-        Exit 1
-    }
-    
-    try {
-        $result = & "$exePath" -version 2>&1         
-    }
-    catch {
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error "$result"
-            Exit 1
-        }        
-    }    
-    Write-Output "$executable : OK"    
-}
-
-Write-Output "Installing shim files..."
-foreach ($executable in $executables) {
-    $exePath = Join-Path "$unzipLocation" "$executable-static.exe"
-    Install-BinFile -Name "$executable" -Path "$exePath"
+Get-ChildItem -Path "$unzipLocation\*" | ForEach-Object {
+    Move-Item -Path "$($_.FullName)" -Destination "$toolsDir\$($_.Name.Replace('-static',''))"
 }

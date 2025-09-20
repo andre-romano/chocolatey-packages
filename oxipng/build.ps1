@@ -1,3 +1,4 @@
+$ErrorActionPreference = 'Stop'
 
 $dist_path = Join-Path $PSScriptRoot "dist"
 
@@ -33,6 +34,14 @@ if ($LASTEXITCODE -ne 0) {
 choco install -y --acceptlicense "$packageName" --version="$version" --source="$dist_path;https://community.chocolatey.org/api/v2/"
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Install failed: $LASTEXITCODE"
+    Exit $LASTEXITCODE
+}
+
+$executable = Get-Command "$packageName" | Select-Object -First 1
+Write-Output "Executable: $executable"
+& "$executable" --version
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "Check failed: $LASTEXITCODE"
     Exit $LASTEXITCODE
 }
 
